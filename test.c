@@ -37,8 +37,6 @@ int cmd_list (flux_jobid_t id)
     uint32_t userid = FLUX_USERID_UNKNOWN;
     int states = FLUX_JOB_STATE_RUNNING;
     const char *attrs_json_str = "[\"expiration\"]";
-
-
     const char *uri = NULL;
 
     if (!(h = flux_open (NULL, 0)))
