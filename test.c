@@ -66,19 +66,7 @@ int cmd_list (flux_jobid_t id)
         }
     }
 
-    /*
-    if (optparse_hasopt (p, "all-user") || optparse_hasopt (p, "all"))
-        states = FLUX_JOB_STATE_ACTIVE | FLUX_JOB_STATE_INACTIVE;
-    else if (optparse_hasopt (p, "states"))
-        states = parse_arg_states (p, "states");
-    else
-    */
-
     states = FLUX_JOB_STATE_PENDING | FLUX_JOB_STATE_RUNNING;
-
-    /*
-        userid = getuid ();
-    */
     userid = FLUX_USERID_UNKNOWN;
 
     if (!(f = flux_job_list (h, max_entries, attrs_json_str, userid, states)))
