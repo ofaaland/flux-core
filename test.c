@@ -31,16 +31,40 @@ int log_err_exit (char *s)
 int cmd_list (flux_jobid_t id)
 {
     int max_entries = 5;
-    flux_t *h;
+    flux_t *h = NULL;
+    flux_t *other_h = NULL;
     flux_future_t *f;
     json_t *jobs;
     size_t index;
     json_t *value;
     uint32_t userid;
     int states = 0;
+    const char *uri = NULL;
 
     if (!(h = flux_open (NULL, 0)))
         log_err_exit ("flux_open");
+
+    /*
+     * Whether to ask our parent or not
+     * See https://github.com/flux-framework/flux-core/issues/3817
+     */
+
+	if (!getenv("FLUX_KVS_NAMESPACE")) {
+        uri = flux_attr_get (h, "parent-uri");
+        if (!uri) {
+		    printf("no FLUX_KVS_NAMESPACE and flux_attr_get for parent-uri failed\n");
+            flux_close (h);
+            return (-1);
+        }
+
+        other_h = h;
+        h = flux_open (uri, 0);
+        if (!h) {
+		    printf("flux_open with parent-uri %s failed\n", uri);
+            flux_close (other_h);
+            return (-1);
+        }
+    }
 
     /*
     if (optparse_hasopt (p, "all-user") || optparse_hasopt (p, "all"))
@@ -71,6 +95,7 @@ int cmd_list (flux_jobid_t id)
     }
     flux_future_destroy (f);
     flux_close (h);
+    flux_close (other_h);
 
     return (0);
 }
@@ -101,7 +126,10 @@ int main(int argc, char **argv)
 		return(2);
 	}
 
-	cmd_list (id);
+	if (cmd_list (id) < 0) {
+		printf("%s: unable to look up expiration %s\n", argv[0]);
+		return(3);
+	}
 
 	return(0);
 }
