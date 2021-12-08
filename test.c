@@ -15,9 +15,6 @@
 #include <flux/core.h>
 #include <flux/optparse.h>
 
-static const char *attrs_json_str =
-	"[\"userid\",\"state\",\"expiration\"]";
-
 int log_msg_exit (char *s)
 {
     printf("%s\n", s);
@@ -39,6 +36,8 @@ int cmd_list (flux_jobid_t id)
     json_t *value;
     uint32_t userid = FLUX_USERID_UNKNOWN;
     int states = FLUX_JOB_STATE_RUNNING;
+    const char *attrs_json_str = "[\"expiration\"]";
+
 
     const char *uri = NULL;
 
