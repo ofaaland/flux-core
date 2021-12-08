@@ -68,7 +68,8 @@ int cmd_list (flux_jobid_t id)
         log_err_exit ("flux_job_list");
     if (flux_rpc_get_unpack (f, "{s:o}", "jobs", &jobs) < 0)
         log_err_exit ("flux_job_list");
-    json_array_foreach (jobs, index, value) {
+    value = json_array_get(jobs, 0);
+    if (value) {
         char *str;
         str = json_dumps (value, 0);
         if (!str)
