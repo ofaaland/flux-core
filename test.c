@@ -37,8 +37,9 @@ int cmd_list (flux_jobid_t id)
     json_t *jobs;
     size_t index;
     json_t *value;
-    uint32_t userid;
-    int states = 0;
+    uint32_t userid = FLUX_USERID_UNKNOWN;
+    int states = FLUX_JOB_STATE_RUNNING;
+
     const char *uri = NULL;
 
     if (!(h = flux_open (NULL, 0)))
@@ -65,9 +66,6 @@ int cmd_list (flux_jobid_t id)
             return (-1);
         }
     }
-
-    states = FLUX_JOB_STATE_PENDING | FLUX_JOB_STATE_RUNNING;
-    userid = FLUX_USERID_UNKNOWN;
 
     if (!(f = flux_job_list (h, max_entries, attrs_json_str, userid, states)))
         log_err_exit ("flux_job_list");
