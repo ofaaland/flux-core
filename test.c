@@ -25,7 +25,7 @@ int log_err_exit (char *s)
     printf("error: %s\n", s);
 }
 
-int cmd_list (flux_jobid_t id, long *expiration)
+int get_job_expiration (flux_jobid_t id, long *expiration)
 {
     int max_entries = 5;
     flux_t *h = NULL;
@@ -110,7 +110,7 @@ int main(int argc, char **argv)
 		return(2);
 	}
 
-	if (cmd_list (id, &expiration) < 0) {
+	if (get_job_expiration (id, &expiration) < 0) {
 		printf("%s: unable to look up expiration %s\n", argv[0]);
 		return(3);
 	}
