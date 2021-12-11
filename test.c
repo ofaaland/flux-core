@@ -29,7 +29,7 @@ int cmd_list (flux_jobid_t id)
 {
     int max_entries = 5;
     flux_t *h = NULL;
-    flux_t *other_h = NULL;
+    flux_t *child_handle = NULL;
     flux_future_t *f;
     json_t *jobs;
     size_t index;
@@ -55,11 +55,11 @@ int cmd_list (flux_jobid_t id)
             return (-1);
         }
 
-        other_h = h;
+        child_handle = h;
         h = flux_open (uri, 0);
         if (!h) {
 		    printf("flux_open with parent-uri %s failed\n", uri);
-            flux_close (other_h);
+            flux_close (child_handle);
             return (-1);
         }
     }
@@ -79,7 +79,7 @@ int cmd_list (flux_jobid_t id)
     }
     flux_future_destroy (f);
     flux_close (h);
-    flux_close (other_h);
+    flux_close (child_handle);
 
     return (0);
 }
