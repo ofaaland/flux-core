@@ -27,7 +27,7 @@ int log_err_exit (char *s)
 
 int get_job_expiration (flux_jobid_t id, long *expiration)
 {
-    int max_entries = 5;
+    int max_entries = 1;
     flux_t *h = NULL;
     flux_t *child_handle = NULL;
     flux_future_t *f;
