@@ -34,6 +34,8 @@ int cmd_list (flux_jobid_t id)
     json_t *jobs;
     size_t index;
     json_t *value;
+    const char *okey;
+    json_t *ovalue;
     const char *attrs_json_str = "[\"expiration\"]";
     const char *uri = NULL;
 
@@ -67,14 +69,16 @@ int cmd_list (flux_jobid_t id)
         log_err_exit ("flux_job_list");
     if (flux_rpc_get_unpack (f, "{s:o}", "jobs", &jobs) < 0)
         log_err_exit ("flux_job_list");
+
     value = json_array_get(jobs, 0);
     if (value) {
-        char *str;
-        str = json_dumps (value, 0);
-        if (!str)
-            log_msg_exit ("error parsing list response");
-        printf ("%s\n", str);
-        free (str);
+        ovalue = json_object_get(value, "expiration");
+        if (!ovalue) {
+            printf("json_object_get(expiration) returned NULL\n");
+            log_err_exit ("flux_job_list");
+        }
+
+        printf("expiration is %f\n", json_real_value(ovalue));
     }
     flux_future_destroy (f);
     flux_close (h);
