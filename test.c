@@ -68,18 +68,14 @@ int cmd_list (flux_jobid_t id)
         FLUX_USERID_UNKNOWN, FLUX_JOB_STATE_RUNNING)))
         log_err_exit ("flux_job_list");
     if (flux_rpc_get_unpack (f, "{s:o}", "jobs", &jobs) < 0)
-        log_err_exit ("flux_job_list");
+        log_err_exit ("flux_rcp_get_unpack");
+    if (!(value = json_array_get(jobs, 0)))
+        log_err_exit ("flux_array_get");
+    if (!(ovalue = json_object_get(value, "expiration")))
+        log_err_exit ("json_object_get");
 
-    value = json_array_get(jobs, 0);
-    if (value) {
-        ovalue = json_object_get(value, "expiration");
-        if (!ovalue) {
-            printf("json_object_get(expiration) returned NULL\n");
-            log_err_exit ("flux_job_list");
-        }
+    printf("expiration is %f\n", json_real_value(ovalue));
 
-        printf("expiration is %f\n", json_real_value(ovalue));
-    }
     flux_future_destroy (f);
     flux_close (h);
     flux_close (child_handle);
