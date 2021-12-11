@@ -34,8 +34,6 @@ int cmd_list (flux_jobid_t id)
     json_t *jobs;
     size_t index;
     json_t *value;
-    uint32_t userid = FLUX_USERID_UNKNOWN;
-    int states = FLUX_JOB_STATE_RUNNING;
     const char *attrs_json_str = "[\"expiration\"]";
     const char *uri = NULL;
 
@@ -64,7 +62,8 @@ int cmd_list (flux_jobid_t id)
         }
     }
 
-    if (!(f = flux_job_list (h, max_entries, attrs_json_str, userid, states)))
+    if (!(f = flux_job_list (h, max_entries, attrs_json_str,
+        FLUX_USERID_UNKNOWN, FLUX_JOB_STATE_RUNNING)))
         log_err_exit ("flux_job_list");
     if (flux_rpc_get_unpack (f, "{s:o}", "jobs", &jobs) < 0)
         log_err_exit ("flux_job_list");
