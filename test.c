@@ -25,7 +25,7 @@ int log_err_exit (char *s)
     printf("error: %s\n", s);
 }
 
-int cmd_list (flux_jobid_t id)
+int cmd_list (flux_jobid_t id, long *expiration)
 {
     int max_entries = 5;
     flux_t *h = NULL;
@@ -74,7 +74,7 @@ int cmd_list (flux_jobid_t id)
     if (!(ovalue = json_object_get(value, "expiration")))
         log_err_exit ("json_object_get");
 
-    printf("expiration is %f\n", json_real_value(ovalue));
+    *expiration = (long int) json_real_value(ovalue);
 
     flux_future_destroy (f);
     flux_close (h);
@@ -87,6 +87,7 @@ int main(int argc, char **argv)
 {
 	flux_jobid_t id;
 	char *flux_jobid_s;
+    long int expiration = -1;
 
 	if (argc > 2) {
 		printf("%s: too many arguments.\n", argv[0]);
@@ -109,10 +110,12 @@ int main(int argc, char **argv)
 		return(2);
 	}
 
-	if (cmd_list (id) < 0) {
+	if (cmd_list (id, &expiration) < 0) {
 		printf("%s: unable to look up expiration %s\n", argv[0]);
 		return(3);
 	}
+
+    printf("expiration is %ld\n", expiration);
 
 	return(0);
 }
