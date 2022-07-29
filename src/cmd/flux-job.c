@@ -93,6 +93,7 @@ int cmd_stats (optparse_t *p, int argc, char **argv);
 int cmd_wait (optparse_t *p, int argc, char **argv);
 int cmd_memo (optparse_t *p, int argc, char **argv);
 int cmd_purge (optparse_t *p, int argc, char **argv);
+int cmd_expiration (optparse_t *p, int argc, char **argv);
 
 int stdin_flags;
 
@@ -510,6 +511,13 @@ static struct optparse_subcommand subcommands[] = {
       cmd_purge,
       0,
       purge_opts,
+    },
+    { "expiration",
+      NULL,
+      "Report expiration of the current job/allocation",
+      cmd_expiration,
+      0,
+      NULL,
     },
     OPTPARSE_SUBCMD_END
 };
@@ -3160,6 +3168,60 @@ int cmd_purge (optparse_t *p, int argc, char **argv)
     flux_close (h);
 
     return rc;
+}
+
+int cmd_expiration (optparse_t *p, int argc, char **argv)
+{
+    flux_jobid_t jobid = 0;
+	flux_t *h = NULL;
+	flux_t *child_handle = NULL;
+	flux_future_t *f;
+	double exp;
+	const char *uri = NULL;
+	int rc = -1;
+	char *jobid_str;
+
+	if ((jobid_str = getenv("FLUX_JOB_ID")) == NULL)
+		log_msg_exit ("expiration: FLUX_JOB_ID is not set.\n");
+
+	if (flux_job_id_parse(jobid_str, &jobid) < 0)
+		log_err_exit ("expiration: Unable to parse FLUX_JOB_ID %s",
+            jobid_str);
+
+	if (!(h = flux_open(NULL, 0)))
+		log_err_exit ("expiration: flux_open() failed");
+
+	/*
+	 * Determine whether to ask our parent or not
+	 * See https://github.com/flux-framework/flux-core/issues/3817
+	 */
+
+	if (!getenv("FLUX_KVS_NAMESPACE")) {
+		uri = flux_attr_get(h, "parent-uri");
+		if (!uri)
+		    log_err_exit ("expiration: flux_attr_get failed");
+
+        child_handle = h;
+		h = flux_open(uri, 0);
+		if (!h)
+			log_err_exit ("expiration: flux_open with parent-uri %s "
+                "failed", uri);
+	}
+
+	if (!(f = flux_job_list_id(h, jobid, "[\"expiration\"]")))
+		log_err_exit ("expiration: flux_job_list failed");
+
+	if (flux_rpc_get_unpack (f, "{s:{s:f}}", "job", "expiration", &exp) < 0)
+		log_err_exit ("expiration: flux_rpc_get_unpack failed");
+
+	printf("%lu\n", (long int) exp);
+	rc = 0;
+
+	flux_future_destroy(f);
+	flux_close(h);
+	flux_close(child_handle);
+
+	return rc;
 }
 
 /*

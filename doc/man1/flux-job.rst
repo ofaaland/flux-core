@@ -22,6 +22,8 @@ SYNOPSIS
 
 **flux** **job** **purge** [*OPTIONS*]
 
+**flux** **job** **expiration** 
+
 DESCRIPTION
 ===========
 
@@ -109,6 +111,12 @@ The following options may be used to add selection criteria:
 
 Inactive jobs may also be purged automatically if the job manager is
 configured as described in :man5:`flux-config-job-manager`.
+
+EXPIRATION
+==========
+
+The expiration time of the current Flux instance, in seconds since the epoch, may
+be obtained with ``flux job expiration``.
 
 
 RESOURCES
